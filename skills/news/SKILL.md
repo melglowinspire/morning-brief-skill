@@ -18,7 +18,11 @@ Retrieve today's morning brief, guide a discussion on the most important article
 
 ```
 YOUR_NEWS_DATABASE_ID  → same database used in morning-brief
+YOUR_ORG_NAME          → your organization name (used in discussion prompts)
+YOUR_ROLE              → your role (used to frame relevance questions)
 ```
+
+Also update the Notion property names in Step 5 to match your actual database column names.
 
 ---
 
@@ -26,8 +30,8 @@ YOUR_NEWS_DATABASE_ID  → same database used in morning-brief
 
 ### Step 1: Find Today's Briefing Page
 
-Use `mcp__notion__API-post-search` to find today's page:
-- query: `YYYY-MM-DD Morning Brief` (today's date)
+Use `mcp__notion__API-post-search`:
+- query: `YYYY-MM-DD` (today's date — matches the page title created by morning-brief)
 - filter: `{"value": "page", "property": "object"}`
 
 **Found:** proceed to Step 2.
@@ -37,7 +41,7 @@ Use `mcp__notion__API-post-search` to find today's page:
 
 ### Step 2: Display the Briefing
 
-Read the page content with `mcp__notion__API-get-block-children`, then display clearly in Claude Code:
+Read page content with `mcp__notion__API-get-block-children`, then display in Claude Code:
 
 ```
 📰 Morning Brief YYYY-MM-DD
@@ -56,7 +60,6 @@ Read the page content with `mcp__notion__API-get-block-children`, then display c
 
 📬 Gmail Todos
 - [Item 1]
-- [Item 2]
 
 📅 Reminders
 - [Item 1]
@@ -71,31 +74,31 @@ Then ask:
 
 Guide a discussion on the selected article(s). You may discuss 2-3 related articles together.
 
-**Discussion questions (ask one at a time, don't front-load all):**
+**Discussion questions (ask one at a time):**
 1. What's your first reaction to this?
 2. What do you think is driving this — regulation? market pressure? technology?
-3. If you were at [your organization], how would this affect your work?
-4. What direction do you see this pushing the industry?
+3. How would this affect your work at [YOUR_ORG_NAME]?
+4. What direction do you see this pushing your industry?
 
-**If the user mentions multiple related articles:**
+**If multiple related articles come up:**
 - Help map the connections between them
-- Ask: "Do you want to combine these into one analysis page, or pick one as the main focus with the others in Further Reading?"
+- Ask: "Do you want to combine these into one page, or pick one as the main focus with others in Further Reading?"
 
 **While discussing, gradually build up:**
-- Background (where this story comes from)
+- Background (where this story comes from, beyond just this article)
 - Perspectives (government / industry / NGO angles)
-- Further Reading links (from related articles)
+- Further Reading links
 
-When discussion winds down, prompt:
+When discussion winds down:
 > "Ready to write this up? Which article should be the main focus for this Notion page?"
 
 ---
 
 ### Step 4: Confirm Before Writing
 
-Summarize what you'll write and ask for confirmation:
+Summarize what you'll fill in and ask for confirmation:
 
-> Here's what I'm planning to fill in — does this look right?
+> Here's what I'm planning — does this look right?
 >
 > **Page title:** [Article headline]
 >
@@ -105,14 +108,14 @@ Summarize what you'll write and ask for confirmation:
 > - Source URL: [link]
 > - Fact: [core fact in ≤30 words]
 > - Why: [driving force behind the story]
-> - Relevance to me: [impact on your role/organization]
+> - Relevance to me: [impact on your role / organization]
 >
 > **Page content:**
-> - Background: [summary]
-> - Perspectives: [summary]
+> - Background: [summary from discussion]
+> - Perspectives: [summary from discussion]
 > - Further Reading: [list of related article links]
 >
-> **My Take** — left blank for you to fill in.
+> **"My Take"** — left blank for you to fill in yourself.
 >
 > Any changes?
 
@@ -128,26 +131,24 @@ After confirmation, proceed to Step 5.
 {
   "page_id": "[today's brief page ID]",
   "properties": {
-    "標題": {"title": [{"text": {"content": "[Article headline]"}}]},
-    "分類": {"multi_select": [{"name": "[Category]"}]},
-    "重要性": {"select": {"name": "[High/Medium/Reference]"}},
-    "來源網址": {"url": "[Source URL]"},
-    "事實": {"rich_text": [{"text": {"content": "[Core fact ≤30 words]"}}]},
-    "原因": {"rich_text": [{"text": {"content": "[Driving force]"}}]},
-    "對我的意義（與大豐的關係）": {"rich_text": [{"text": {"content": "[Relevance to role]"}}]},
-    "日期": {"date": {"start": "YYYY-MM-DD"}}
+    "YOUR_TITLE_PROPERTY": {"title": [{"text": {"content": "[Article headline]"}}]},
+    "YOUR_CATEGORY_PROPERTY": {"multi_select": [{"name": "[Category]"}]},
+    "YOUR_IMPORTANCE_PROPERTY": {"select": {"name": "[High/Medium/Reference]"}},
+    "YOUR_SOURCE_URL_PROPERTY": {"url": "[Source URL]"},
+    "YOUR_FACT_PROPERTY": {"rich_text": [{"text": {"content": "[Core fact ≤30 words]"}}]},
+    "YOUR_REASON_PROPERTY": {"rich_text": [{"text": {"content": "[Driving force]"}}]},
+    "YOUR_RELEVANCE_PROPERTY": {"rich_text": [{"text": {"content": "[Relevance to role]"}}]},
+    "YOUR_DATE_PROPERTY": {"date": {"start": "YYYY-MM-DD"}}
   }
 }
 ```
 
-> **Note:** Rename the property keys to match your Notion database's actual property names.
-
-**Update page content** (find block IDs, then update):
+**Update page content blocks:**
 1. `mcp__notion__API-get-block-children` — get all blocks on the page
-2. Find the heading blocks for Background, Perspectives, Further Reading
-3. Update the paragraph blocks below each heading with `mcp__notion__API-update-a-block`
+2. Find the heading_2 blocks for Background, Perspectives, Further Reading
+3. Update the paragraph block below each heading using `mcp__notion__API-update-a-block`
 
-**Further Reading format** — one `bulleted_list_item` per link:
+**Further Reading format** (one bulleted_list_item per link):
 ```json
 {
   "type": "bulleted_list_item",
@@ -169,7 +170,7 @@ After confirmation, proceed to Step 5.
 ```
 ✅ Notion updated
 📄 [Page title]
-🔗 [Notion page link]
+🔗 https://www.notion.so/{page-id-without-hyphens}
 
 💬 "My Take" is left blank — fill that in when you're ready.
 ```
@@ -180,22 +181,23 @@ After confirmation, proceed to Step 5.
 
 **Database ID:** `YOUR_NEWS_DATABASE_ID`
 
-**Property types to match:**
-- Title field (title type)
-- Date field (date type)
-- Category field (multi_select type)
-- Source URL field (url type)
-- Importance field (select type) — options: High / Medium / Reference
-- Fact field (rich_text type)
-- Why/Reason field (rich_text type)
-- Relevance field (rich_text type)
+**Typical property types:**
+- Title (title type) — article headline
+- Date (date type) — article date
+- Category (multi_select type) — topic tags
+- Source URL (url type) — original article link
+- Importance (select type) — High / Medium / Reference
+- Fact (rich_text type) — core fact in ≤30 words
+- Why/Reason (rich_text type) — driving force behind the story
+- Relevance (rich_text type) — impact on your role/organization
 
-**Page content sections:**
+**Page content sections (heading_2 blocks):**
 Background / Perspectives / Further Reading / My Take
 
 ---
 
 ## Notion API Notes
 
-- Adding a new multi_select option that doesn't exist yet: just pass the new name — Notion creates it automatically.
-- To update block content: get the block ID from `get-block-children`, then use `update-a-block` on the specific paragraph block below each heading.
+- Adding new multi_select options: just pass the new name — Notion creates it automatically.
+- To update block content: get block ID from `get-block-children`, then use `update-a-block` on the paragraph below each heading.
+- Page URL format: always use `https://www.notion.so/{32-char-id}` (the `app.notion.com` format returned by the API may not open correctly in all browsers).
