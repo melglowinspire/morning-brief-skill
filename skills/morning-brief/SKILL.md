@@ -40,12 +40,29 @@ Use `mcp__claude_ai_Gmail__search_threads`:
 - Read each thread with `mcp__claude_ai_Gmail__get_thread`
 - Extract: headline, source, URL, summary
 
-### Step 2: Scrape Industry News Source
+### Step 2: Scrape Fixed News Sources
 
-Use Firecrawl MCP to scrape:
-- URL: `YOUR_NEWS_SOURCE_URL`
-- Extract the latest 5 articles: title, date, link
-- Fallback to Playwright if Firecrawl fails
+Use Firecrawl MCP to scrape each source below, extracting the latest 3–5 articles per source:
+
+```
+YOUR_NEWS_SOURCE_1   → e.g. government environmental news page
+YOUR_NEWS_SOURCE_2   → e.g. industry sustainability publication
+YOUR_NEWS_SOURCE_3   → e.g. ESG / business news section
+```
+
+For each article extract: title, date, URL, summary (if available).
+
+**On failure:** If Firecrawl fails for a source, skip it and continue — do not stop the whole flow. Do not fall back to Playwright (Google News actively blocks scrapers; other sources just skip on failure).
+
+**Merge with Google Alerts:** Combine Step 1 and Step 2 results, then score and filter together in Step 5.
+
+**Example sources for Taiwan environmental/sustainability roles:**
+
+| Source | URL | Focus |
+|--------|-----|-------|
+| Ministry of Environment | `https://enews.moenv.gov.tw/Page/B514A5023133ED27` | Policy & regulations |
+| Environmental Info Center | `https://e-info.org.tw/` | In-depth environmental news |
+| Economic Daily ESG | `https://money.udn.com/money/cate/5591` | Corporate sustainability, carbon fee |
 
 ### Step 3: Read Work Journal Follow-ups
 
