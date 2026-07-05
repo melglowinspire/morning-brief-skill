@@ -42,17 +42,20 @@ Use `mcp__claude_ai_Gmail__search_threads`:
 
 ### Step 2: Scrape Fixed News Sources
 
-Use Firecrawl MCP to scrape each source below, extracting the latest 3–5 articles per source:
+Use **Firecrawl MCP** as the primary tool. If Firecrawl is not available in the current session, fall back to **WebFetch** (same result, WebFetch is the backup).
+
+Scrape each source below, extracting the latest 3–5 articles per source:
 
 ```
 YOUR_NEWS_SOURCE_1   → e.g. government environmental news page
 YOUR_NEWS_SOURCE_2   → e.g. industry sustainability publication
-YOUR_NEWS_SOURCE_3   → e.g. ESG / business news section
 ```
 
 For each article extract: title, date, URL, summary (if available).
 
-**On failure:** If Firecrawl fails for a source, skip it and continue — do not stop the whole flow. Do not fall back to Playwright (Google News actively blocks scrapers; other sources just skip on failure).
+**Stale content filter:** Only keep articles published within the last 7 days. If date is not visible on the page, take the first 3 listed items.
+
+**On failure:** If a source fails, skip it and continue — do not stop the whole flow. Do not use Playwright or attempt Google News (actively blocked).
 
 **Merge with Google Alerts:** Combine Step 1 and Step 2 results, then score and filter together in Step 5.
 
@@ -62,7 +65,8 @@ For each article extract: title, date, URL, summary (if available).
 |--------|-----|-------|
 | Ministry of Environment | `https://enews.moenv.gov.tw/Page/B514A5023133ED27` | Policy & regulations |
 | Environmental Info Center | `https://e-info.org.tw/` | In-depth environmental news |
-| Economic Daily ESG | `https://money.udn.com/money/cate/5591` | Corporate sustainability, carbon fee |
+
+> **Note:** Avoid news aggregator pages where articles may be weeks or months old (e.g. category archive pages). Prefer pages that show clearly dated, recently-published articles.
 
 ### Step 3: Read Work Journal Follow-ups
 
@@ -249,11 +253,23 @@ One `bulleted_list_item` per todo item.
 
 ```
 ✅ Morning brief created
-📄 Notion page: [URL]
+📄 Notion page: https://www.notion.so/{page-id-without-hyphens}
 📰 News: N articles (High: X / Medium: Y / Reference: Z)
 📬 Gmail todos: N items
 📋 Work follow-ups: Yes / None
 ```
+
+**URL format note:** The Notion API returns URLs in `app.notion.com/p/...` format, which may not open correctly. Always report the page link as `https://www.notion.so/{32-char-page-id}` (page ID with hyphens removed).
+
+---
+
+## Notion API Notes
+
+**children format:** Each element in the `children` array must be a **JSON object**, not a stringified JSON string.
+- ❌ Wrong: `["{\"type\": \"paragraph\"...}"]`
+- ✅ Correct: `[{"type": "paragraph", ...}]`
+
+**Work journal reading:** Use `mcp__notion__API-post-search` with `sort: last_edited_time descending` to find the most recent journal entry, rather than querying the database directly (direct query may fail depending on MCP configuration).
 
 ---
 
