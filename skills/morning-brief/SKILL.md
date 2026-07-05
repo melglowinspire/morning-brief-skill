@@ -122,10 +122,25 @@ Score all collected news (Google Alerts + scraped source) using this matrix:
 
 For each article, summarize:
 - Headline (one sentence, ≤30 words)
+- Source media name
+- **Original URL (required):**
+  - Google Alerts: extract the real URL from the `url=` parameter (do not use the Google redirect URL)
+  - Scraped sites: prepend the base domain to any relative paths (e.g. `/node/123` → `https://e-info.org.tw/node/123`)
+  - If URL cannot be resolved, use the source homepage
 - Why it's happening (regulatory change? market pressure? tech breakthrough?)
 - Relevance to your role (1 sentence, in blue text)
 
 ### Step 6: Create Notion Page
+
+Add a "how to use" callout as the first block (before the news items):
+
+```json
+{"type": "callout", "callout": {
+  "rich_text": [{"type": "text", "text": {"content": "📖 Morning brief is ready! Open Claude Code and type /news to discuss today's news. After discussion, Claude will write up the key insights back into this page."}}],
+  "icon": {"type": "emoji", "emoji": "💡"},
+  "color": "yellow_background"
+}}
+```
 
 Use `mcp__notion__API-post-page` to create a page in `YOUR_NEWS_DATABASE_ID`.
 
